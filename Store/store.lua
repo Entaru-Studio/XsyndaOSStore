@@ -37,33 +37,26 @@ function m.start(ctx)
 
     local url = "https://raw.githubusercontent.com/Entaru-Studio/XsyndaOSStore/refs/heads/main/"
 
-    local currentPage = 1
-    local selectedPage = 1
-    local currentStroka = 1
+    local scrollOffsetY = 0
+    local currentString = 1
 
-    local history = {{}}
+    local history = {}
 
     for i, v in ipairs(storeApps) do
-        if currentStroka <= ctx.height then
-            wot(v.name .. " | Version " .. v.version, 1, currentStroka)
-            history[currentPage][currentStroka] = v
+        wot(v.name .. " | Version " .. v.version, 1, currentString+scrollOffsetY)
+        history[currentString] = v
 
-            currentStroka = currentStroka + 1
-        else
-            term.clear()
-            currentStroka = 1
-            currentPage = currentPage + 1
-            history[currentPage] = {}
-            selectedPage = currentPage
-        end
+        currentString = currentString + 1
     end
 
     --print(storeApps)
 
     local function redraw()
         term.clear()
-        for i, v in ipairs(history[selectedPage]) do
-            wot(v.name .. " | Version " .. v.version, 1, i)
+        currentString = 1
+        for i, v in ipairs(history) do
+            wot(v.name .. " | Version " .. v.version, 1, currentString+scrollOffsetY)
+            currentString = currentString + 1
         end
     end
 
@@ -74,25 +67,25 @@ function m.start(ctx)
 
             if event == "mouse_scroll" then
                 if eventData[2] == 1 then
-                    -- down
-                    if selectedPage < currentPage then
-                        selectedPage = selectedPage + 1
+                    if (math.abs(scrollOffsetY)+_H) < #history then
+                        scrollOffsetY = scrollOffsetY - 1
                         redraw()
                     end
-                else
-                    -- up
-                    if selectedPage > 1 then
-                        selectedPage = selectedPage - 1
-                        redraw()
-                    end
+                elseif eventData[2] == 0 and math.abs(scrollOffsetY) >= 1 then
+                    scrollOffsetY = scrollOffsetY + 1
+                    redraw()
                 end
             elseif event == "mouse_click" then
                 local y = eventData[4]
 
-                local selectedApp = history[selectedPage][y]
+                local selectedApp = history[y+scrollOffsetY]
                 if selectedApp then
-                    local selectedAppPath = split(selectedApp.path, "/")[#split(selectedApp.path, "/")]
-                    edata.write(selectedAppPath, http.get(url .. selectedApp.path).readAll(), 1, "user")
+                    local selectedAppPath = split(selectedApp.path, "/")
+                    wot(selectedApp.name .. " | Version " .. selectedApp.version .. " | Installed!", 1, y+scrollOffsetY)
+                    fs.makeDir("users/" .. ctx.currentProfile .. "/apps/" .. selectedAppPath[1])
+                    edata.write("users/" .. ctx.currentProfile .. "/apps/" .. selectedAppPath[1] .. "/main.lua" , http.get(url .. selectedApp.path).readAll(), 1, "")
+                    sleep(2)
+                    redraw()
                 end
             end
 
