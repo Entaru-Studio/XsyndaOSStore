@@ -36,7 +36,7 @@ function m.start(ctx)
                 local key = keys.getName(ev[2])
 
                 if key == "one" then
-                    local edata = loadstring(http.get("https://raw.githubusercontent.com/Entaru-Studio/XsyndaOS/refs/heads/main/sys/edata.lua").readAll())()
+                    local edata = ctx.edata
 
                     edata.write("install.lua", http.get("https://raw.githubusercontent.com/Entaru-Studio/XsyndaOS/refs/heads/main/install.lua").readAll(), 1, "")
                     edata.write("startup.lua", "shell.run(\"install.lua\")")
