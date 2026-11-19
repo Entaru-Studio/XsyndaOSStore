@@ -26,6 +26,8 @@ function m.start(ctx)
 
         wot("Press \"1\" for install", 1, 6)
         wot("Press \"Home\" for cancel", 1, 7)
+    else
+        wot("You have newest version", 1, 3)
     end
     local function chooseLoop()
         while true do
